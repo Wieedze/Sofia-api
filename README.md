@@ -39,6 +39,8 @@ npx wrangler secret put DISCORD_CLIENT_ID
 npx wrangler secret put DISCORD_CLIENT_SECRET
 npx wrangler secret put SPOTIFY_CLIENT_ID
 npx wrangler secret put SPOTIFY_CLIENT_SECRET
+npx wrangler secret put TWITTER_CLIENT_ID
+npx wrangler secret put TWITTER_CLIENT_SECRET
 ```
 
 3. Deploy:
@@ -84,6 +86,17 @@ Exchange Spotify authorization code for tokens.
 {
   "code": "authorization_code",
   "redirect_uri": "https://sofia.intuition.box/auth/spotify/callback"
+}
+```
+
+### POST /auth/twitter/token
+Exchange Twitter/X authorization code for tokens.
+
+**Request:**
+```json
+{
+  "code": "authorization_code",
+  "redirect_uri": "https://sofia.intuition.box/auth/twitter/callback"
 }
 ```
 
