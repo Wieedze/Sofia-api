@@ -9,6 +9,7 @@
  * - POST /auth/discord/token - Exchange Discord auth code for tokens
  * - POST /auth/spotify/token - Exchange Spotify auth code for tokens
  * - POST /auth/twitter/token - Exchange Twitter auth code for tokens
+ * - POST /auth/twitch/token - Exchange Twitch auth code for tokens
  */
 
 export interface Env {
@@ -27,6 +28,10 @@ export interface Env {
   // Twitter/X OAuth
   TWITTER_CLIENT_ID: string;
   TWITTER_CLIENT_SECRET: string;
+
+  // Twitch OAuth
+  TWITCH_CLIENT_ID: string;
+  TWITCH_CLIENT_SECRET: string;
 
   // Allowed origins
   ALLOWED_ORIGINS: string;
@@ -226,6 +231,45 @@ async function handleTwitterToken(request: Request, env: Env, origin: string): P
   }
 }
 
+// ============= TWITCH TOKEN EXCHANGE =============
+
+async function handleTwitchToken(request: Request, env: Env, origin: string): Promise<Response> {
+  try {
+    const body = await request.json() as { code: string; redirect_uri: string };
+    const { code, redirect_uri } = body;
+
+    if (!code || !redirect_uri) {
+      return jsonResponse({ error: 'Missing code or redirect_uri' }, 400, origin, env);
+    }
+
+    const response = await fetch('https://id.twitch.tv/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: env.TWITCH_CLIENT_ID,
+        client_secret: env.TWITCH_CLIENT_SECRET,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: redirect_uri,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[Twitch Token] Exchange failed:', data);
+      return jsonResponse({ error: 'Token exchange failed', details: data as object }, response.status, origin, env);
+    }
+
+    return jsonResponse(data as object, 200, origin, env);
+  } catch (error) {
+    console.error('[Twitch Token] Error:', error);
+    return jsonResponse({ error: 'Internal server error' }, 500, origin, env);
+  }
+}
+
 // ============= MAIN ROUTER =============
 
 export default {
@@ -251,6 +295,8 @@ export default {
           return handleSpotifyToken(request, env, origin);
         case '/auth/twitter/token':
           return handleTwitterToken(request, env, origin);
+        case '/auth/twitch/token':
+          return handleTwitchToken(request, env, origin);
       }
     }
 
