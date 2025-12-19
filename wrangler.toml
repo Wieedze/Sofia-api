@@ -2,10 +2,15 @@ name = "sofia-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
-# Custom domain
-routes = [
-  { pattern = "api.sofia.intuition.box/*", zone_name = "intuition.box" }
-]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+
+# Custom domain - configure in Cloudflare dashboard first
+# routes = [
+#   { pattern = "api.sofia.intuition.box/*", zone_name = "intuition.box" }
+# ]
 
 [vars]
 ALLOWED_ORIGINS = "https://sofia.intuition.box,chrome-extension://fgggfhnffjffiipdpipbkkceaengpeag"

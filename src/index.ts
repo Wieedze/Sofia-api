@@ -220,11 +220,22 @@ async function handleTwitterToken(request: Request, env: Env, origin: string): P
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[Twitter Token] Exchange failed:', data);
       return jsonResponse({ error: 'Token exchange failed', details: data as object }, response.status, origin, env);
     }
 
-    return jsonResponse(data as object, 200, origin, env);
+    // DEBUG: Include raw response info for troubleshooting
+    const debugResponse = {
+      ...(data as object),
+      _debug: {
+        keys: Object.keys(data as object),
+        hasAccessToken: !!(data as any).access_token,
+        tokenType: (data as any).token_type,
+        expiresIn: (data as any).expires_in,
+        scope: (data as any).scope,
+      }
+    };
+
+    return jsonResponse(debugResponse, 200, origin, env);
   } catch (error) {
     console.error('[Twitter Token] Error:', error);
     return jsonResponse({ error: 'Internal server error' }, 500, origin, env);
